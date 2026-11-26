@@ -1,0 +1,9 @@
+-r requirements.txt
+streamlit>=1.35
+pandas>=2.0
+requests>=2.31
+pytest>=8.0
+ruff>=0.5
+pre-commit>=3.7
+locust>=2.24
+huggingface_hub>=0.23

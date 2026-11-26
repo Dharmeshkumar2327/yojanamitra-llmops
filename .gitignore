@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+
+# data: raw scheme PDFs ARE committed (public govt docs, needed by the weekly
+# refresh job in GitHub Actions). Processed chunks are regenerated.
+data/processed/*
+!data/processed/.gitkeep
+data/*.db
+
+# eval runs (baseline.json IS committed)
+evals/results/*
+!evals/results/.gitkeep
+
+# local model cache
+.cache/
+local_cache/
+qdrant_storage/
