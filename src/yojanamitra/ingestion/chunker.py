@@ -18,12 +18,33 @@ from dataclasses import asdict, dataclass
 SECTION_KEYWORDS: dict[str, list[str]] = {
     "Exclusions": ["exclusion", "not eligible", "ineligible", "अपात्र", "बहिष्करण"],
     "Eligibility": ["eligibility", "eligible", "who can apply", "criteria", "पात्रता", "पात्र"],
-    "Documents Required": ["documents required", "required documents", "documents", "आवश्यक दस्तावेज", "दस्तावेज"],
-    "How to Apply": ["how to apply", "application process", "apply online", "registration", "आवेदन", "पंजीकरण"],
+    "Documents Required": [
+        "documents required",
+        "required documents",
+        "documents",
+        "आवश्यक दस्तावेज",
+        "दस्तावेज",
+    ],
+    "How to Apply": [
+        "how to apply",
+        "application process",
+        "apply online",
+        "registration",
+        "आवेदन",
+        "पंजीकरण",
+    ],
     "Benefits": ["benefit", "assistance", "financial support", "लाभ", "सहायता राशि"],
     "FAQ": ["faq", "frequently asked", "प्रश्न"],
     "Contact": ["helpline", "contact", "grievance", "संपर्क", "हेल्पलाइन"],
-    "Overview": ["overview", "introduction", "about the scheme", "objective", "परिचय", "उद्देश्य"],
+    "Overview": [
+        "overview",
+        "introduction",
+        "about the scheme",
+        "objective",
+        "details",
+        "परिचय",
+        "उद्देश्य",
+    ],
 }
 
 _MD_HEADING = re.compile(r"^#{1,4}\s+(.+)$")
@@ -71,6 +92,9 @@ def detect_heading(line: str) -> str | None:
         return s.rstrip(":")
     if s.isupper() and 1 <= len(s.split()) <= 6 and canonical_section(s):
         return s.title()
+    # plain short heading lines, e.g. myScheme PDFs: "Benefits", "Application Process"
+    if len(s.split()) <= 5 and not s.endswith((".", ",", ";")) and canonical_section(s):
+        return s.rstrip(":?")
     return None
 
 

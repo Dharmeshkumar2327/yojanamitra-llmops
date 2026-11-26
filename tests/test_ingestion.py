@@ -1,4 +1,10 @@
-from yojanamitra.ingestion.chunker import canonical_section, chunk_document, detect_heading, split_sections, window_words
+from yojanamitra.ingestion.chunker import (
+    canonical_section,
+    chunk_document,
+    detect_heading,
+    split_sections,
+    window_words,
+)
 from yojanamitra.ingestion.cleaner import clean_text, remove_repeated_lines
 from yojanamitra.ingestion.loaders import parse_html
 from yojanamitra.ingestion.registry import load_schemes
@@ -39,8 +45,14 @@ def test_window_words_overlap():
 
 
 def test_chunk_document_metadata_and_ids():
-    kw = dict(scheme_id="pm_kisan", scheme_name="PM-KISAN", source_id="pm_kisan__x.pdf",
-              source_url="https://pmkisan.gov.in/", ministry="Agri", doc_hash="abc")
+    kw = dict(
+        scheme_id="pm_kisan",
+        scheme_name="PM-KISAN",
+        source_id="pm_kisan__x.pdf",
+        source_url="https://pmkisan.gov.in/",
+        ministry="Agri",
+        doc_hash="abc",
+    )
     a = chunk_document(DOC, **kw)
     b = chunk_document(DOC, **kw)
     assert [c.id for c in a] == [c.id for c in b]  # deterministic ids
@@ -74,3 +86,33 @@ def test_registry_loads():
     ids = {s.id for s in schemes}
     assert {"pm_kisan", "pm_jay", "sukanya_samriddhi"} <= ids
     assert len(ids) == len(schemes)  # no duplicate ids
+
+
+def test_plain_myscheme_headings():
+    text = """PM-KISAN
+Details
+The scheme provides income support to all landholding farmer families across the country.
+Benefits
+Rs 6000 per year in three equal instalments of Rs 2000 each paid directly to bank accounts.
+Eligibility
+All landholding farmer families having cultivable land in their names are eligible here.
+Exclusions
+Income tax payers and institutional land holders are excluded from the scheme benefits.
+Application Process
+Farmers can register online through the PM-KISAN portal or visit a Common Service Centre.
+Documents Required
+Aadhaar card, land ownership papers and bank account details are required for registration.
+Frequently Asked Questions
+Is e-KYC mandatory? Yes, e-KYC is mandatory for all registered PM-KISAN beneficiaries now.
+"""
+    names = [n for n, _ in split_sections(text)]
+    assert names[-7:] == [
+        "Overview",
+        "Benefits",
+        "Eligibility",
+        "Exclusions",
+        "How to Apply",
+        "Documents Required",
+        "FAQ",
+    ]
+    assert detect_heading("Farmers who are eligible get money.") is None
