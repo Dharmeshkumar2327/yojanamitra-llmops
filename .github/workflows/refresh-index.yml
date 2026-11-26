@@ -1,0 +1,38 @@
+name: Weekly index refresh
+
+# Govt scheme pages change (amounts, deadlines). Every Monday 03:30 IST we re-fetch
+# sources, re-index only documents whose content hash changed, then run the core
+# eval set so we know the refresh did not hurt quality.
+on:
+  schedule:
+    - cron: "0 22 * * 0"   # Sunday 22:00 UTC = Monday 03:30 IST
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      QDRANT_URL: ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      RERANK_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt && pip install -e .
+      - name: Refresh changed documents
+        run: python scripts/refresh_index.py --report refresh_report.json
+      - name: Core evals after refresh
+        run: python -m evals.run_evals --subset core --sleep 2 --tag weekly-refresh
+      - name: Quality gate
+        run: python -m evals.gate --results evals/results/latest.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: refresh-report
+          path: |
+            refresh_report.json
+            evals/results/latest.json

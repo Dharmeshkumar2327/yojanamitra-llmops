@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Lint
+        run: ruff check .
+      - name: Unit tests
+        run: pytest -q
+
+  eval-gate:
+    # LLM quality gate: answers 30 core golden questions against the live index and
+    # FAILS the PR if faithfulness/correctness drop or hallucinations rise vs baseline.
+    needs: lint-test
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      QDRANT_URL: ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      RERANK_ENABLED: "false"
+      FASTEMBED_CACHE_PATH: /home/runner/.cache/fastembed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Skip when secrets are unavailable (forks)
+        if: env.GROQ_API_KEY == ''
+        run: echo "No secrets - eval gate skipped." && exit 0
+      - name: Cache embedding models
+        if: env.GROQ_API_KEY != ''
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/fastembed
+          key: fastembed-${{ hashFiles('src/yojanamitra/config.py') }}
+      - name: Install
+        if: env.GROQ_API_KEY != ''
+        run: pip install -r requirements.txt && pip install -e .
+      - name: Run core evals
+        if: env.GROQ_API_KEY != ''
+        run: python -m evals.run_evals --subset core --sleep 2 --tag "ci-${{ github.sha }}"
+      - name: Quality gate
+        if: env.GROQ_API_KEY != ''
+        run: python -m evals.gate --results evals/results/latest.json
+      - name: Upload eval report
+        if: always() && env.GROQ_API_KEY != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: evals/results/latest.json
+      - name: Post summary
+        if: always() && env.GROQ_API_KEY != ''
+        run: |
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          s = json.load(open("evals/results/latest.json"))["summary"]
+          print("## 🧪 Eval results (core set)\n\n| metric | value |\n|---|---|")
+          for k, v in s.items():
+              if k != "by_type":
+                  print(f"| {k} | {v} |")
+          EOF

@@ -1,0 +1,29 @@
+# Render Blueprint - New > Blueprint > connect this repo.
+# Secrets (sync: false) are entered once in the Render dashboard.
+services:
+  - type: web
+    name: yojanamitra-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false          # deploys are triggered by GitHub Actions after CI passes
+    envVars:
+      - key: RERANK_ENABLED
+        value: "false"         # free instance has 512 MB RAM - keep reranker off
+      - key: GROQ_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: LANGFUSE_HOST
+        value: https://cloud.langfuse.com
+      - key: DATABASE_URL
+        sync: false            # free Postgres from Neon/Supabase, e.g. postgresql://...
+      - key: REDIS_URL
+        sync: false            # optional (Upstash free Redis); empty = in-memory cache

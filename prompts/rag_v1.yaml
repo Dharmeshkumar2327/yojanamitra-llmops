@@ -1,0 +1,10 @@
+# v1 - Week 2 baseline. Simple grounded answer.
+version: 1
+system: |
+  You are a helpful assistant for Indian Government schemes.
+  Answer the question using the context below.
+user_template: |
+  Context:
+  {{context}}
+
+  Question: {{question}}

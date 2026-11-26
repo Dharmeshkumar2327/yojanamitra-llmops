@@ -1,0 +1,54 @@
+name: Deploy
+
+# Runs only after CI (tests + eval gate) succeeds on main.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-api:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "RENDER_DEPLOY_HOOK_URL not set - skipping"; exit 0; fi
+          curl -fsS -X POST "$HOOK"
+          echo "Render deploy triggered"
+
+  deploy-space:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build Space folder
+        run: |
+          mkdir -p space
+          cp -r src prompts ui evals requirements.txt requirements-dev.txt pyproject.toml space/
+          mkdir -p space/data && cp data/sources.yaml space/data/
+          cp hf_space/Dockerfile space/Dockerfile
+          cp hf_space/README.md space/README.md
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ secrets.HF_SPACE }}   # e.g. dharmesh/yojanamitra
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_SPACE" ]; then echo "HF secrets not set - skipping"; exit 0; fi
+          pip install -q huggingface_hub
+          python - <<'EOF'
+          import os
+          from huggingface_hub import HfApi
+          HfApi(token=os.environ["HF_TOKEN"]).upload_folder(
+              folder_path="space", repo_id=os.environ["HF_SPACE"], repo_type="space",
+              commit_message=f"deploy {os.environ.get('GITHUB_SHA','')[:7]}",
+          )
+          print("Space updated")
+          EOF
