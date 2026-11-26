@@ -1,0 +1,139 @@
+# Scheme registry - the single source of truth for ingestion + scheme routing.
+#
+# HOW TO ADD DOCUMENTS (recommended):
+#   1. Open https://www.myscheme.gov.in, search the scheme, open its page.
+#   2. Browser -> Print -> "Save as PDF" -> save as data/raw/<id>.pdf
+#      (also download official guideline PDFs from the ministry site as data/raw/<id>_guidelines.pdf)
+#   3. Any file in data/raw/ whose name starts with <id> is picked up automatically
+#      (.pdf, .html, .txt, .md).
+#   If no local file exists, the pipeline tries to fetch `urls` (many govt sites are
+#   JavaScript-heavy, so saved PDFs give much better text).
+#
+# aliases are used by the scheme router (English, Hindi, abbreviations) - lowercase.
+
+schemes:
+  - id: pm_kisan
+    name: Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)
+    ministry: Ministry of Agriculture and Farmers Welfare
+    category: agriculture
+    aliases: [pm kisan, pm-kisan, pmkisan, kisan samman nidhi, किसान सम्मान निधि, पीएम किसान]
+    urls: [https://pmkisan.gov.in/]
+
+  - id: pm_jay
+    name: Ayushman Bharat Pradhan Mantri Jan Arogya Yojana (AB PM-JAY)
+    ministry: Ministry of Health and Family Welfare (National Health Authority)
+    category: health
+    aliases: [ayushman bharat, ayushman card, pm-jay, pmjay, pm jay, golden card, आयुष्मान भारत, आयुष्मान कार्ड]
+    urls: [https://pmjay.gov.in/]
+
+  - id: pmay_urban
+    name: Pradhan Mantri Awas Yojana - Urban (PMAY-U)
+    ministry: Ministry of Housing and Urban Affairs
+    category: housing
+    aliases: [pmay urban, pmay-u, pmay u, awas yojana urban, शहरी आवास योजना]
+    urls: [https://pmay-urban.gov.in/]
+
+  - id: pmay_gramin
+    name: Pradhan Mantri Awas Yojana - Gramin (PMAY-G)
+    ministry: Ministry of Rural Development
+    category: housing
+    aliases: [pmay gramin, pmay-g, pmay g, awas yojana gramin, ग्रामीण आवास योजना]
+    urls: [https://pmayg.nic.in/]
+
+  - id: sukanya_samriddhi
+    name: Sukanya Samriddhi Yojana (SSY)
+    ministry: Ministry of Finance
+    category: savings
+    aliases: [sukanya samriddhi, sukanya, ssy, सुकन्या समृद्धि, सुकन्या]
+    urls: [https://www.nsiindia.gov.in/]
+
+  - id: atal_pension
+    name: Atal Pension Yojana (APY)
+    ministry: Ministry of Finance (PFRDA)
+    category: pension
+    aliases: [atal pension, apy, अटल पेंशन]
+    urls: [https://www.pfrda.org.in/]
+
+  - id: pmjjby
+    name: Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY)
+    ministry: Ministry of Finance
+    category: insurance
+    aliases: [pmjjby, jeevan jyoti, जीवन ज्योति]
+    urls: [https://jansuraksha.gov.in/]
+
+  - id: pmsby
+    name: Pradhan Mantri Suraksha Bima Yojana (PMSBY)
+    ministry: Ministry of Finance
+    category: insurance
+    aliases: [pmsby, suraksha bima, सुरक्षा बीमा]
+    urls: [https://jansuraksha.gov.in/]
+
+  - id: pm_mudra
+    name: Pradhan Mantri Mudra Yojana (PMMY)
+    ministry: Ministry of Finance
+    category: business_loan
+    aliases: [mudra, mudra loan, pmmy, shishu loan, kishore loan, tarun loan, मुद्रा लोन, मुद्रा योजना]
+    urls: [https://www.mudra.org.in/]
+
+  - id: pm_ujjwala
+    name: Pradhan Mantri Ujjwala Yojana (PMUY)
+    ministry: Ministry of Petroleum and Natural Gas
+    category: energy
+    aliases: [ujjwala, pmuy, lpg connection, free gas connection, उज्ज्वला]
+    urls: [https://www.pmuy.gov.in/]
+
+  - id: stand_up_india
+    name: Stand-Up India
+    ministry: Department of Financial Services
+    category: business_loan
+    aliases: [stand up india, stand-up india, standup india, स्टैंड अप इंडिया]
+    urls: [https://www.standupmitra.in/]
+
+  - id: pm_vishwakarma
+    name: PM Vishwakarma
+    ministry: Ministry of Micro, Small and Medium Enterprises
+    category: livelihood
+    aliases: [vishwakarma, pm vishwakarma, artisan scheme, विश्वकर्मा]
+    urls: [https://pmvishwakarma.gov.in/]
+
+  - id: pm_svanidhi
+    name: PM Street Vendor's AtmaNirbhar Nidhi (PM SVANidhi)
+    ministry: Ministry of Housing and Urban Affairs
+    category: livelihood
+    aliases: [svanidhi, pm svanidhi, street vendor loan, रेहड़ी, स्वनिधि]
+    urls: [https://pmsvanidhi.mohua.gov.in/]
+
+  - id: pmfby
+    name: Pradhan Mantri Fasal Bima Yojana (PMFBY)
+    ministry: Ministry of Agriculture and Farmers Welfare
+    category: agriculture
+    aliases: [fasal bima, pmfby, crop insurance, फसल बीमा]
+    urls: [https://pmfby.gov.in/]
+
+  - id: pmmvy
+    name: Pradhan Mantri Matru Vandana Yojana (PMMVY)
+    ministry: Ministry of Women and Child Development
+    category: women_child
+    aliases: [matru vandana, pmmvy, maternity benefit, मातृ वंदना]
+    urls: [https://pmmvy.wcd.gov.in/]
+
+  - id: pm_jan_dhan
+    name: Pradhan Mantri Jan Dhan Yojana (PMJDY)
+    ministry: Department of Financial Services
+    category: banking
+    aliases: [jan dhan, pmjdy, zero balance account, जन धन]
+    urls: [https://pmjdy.gov.in/]
+
+  - id: pmkvy
+    name: Pradhan Mantri Kaushal Vikas Yojana (PMKVY)
+    ministry: Ministry of Skill Development and Entrepreneurship
+    category: skilling
+    aliases: [pmkvy, kaushal vikas, skill india, कौशल विकास]
+    urls: [https://www.pmkvyofficial.org/]
+
+  - id: startup_india
+    name: Startup India
+    ministry: Department for Promotion of Industry and Internal Trade (DPIIT)
+    category: business
+    aliases: [startup india, dpiit recognition, स्टार्टअप इंडिया]
+    urls: [https://www.startupindia.gov.in/]
